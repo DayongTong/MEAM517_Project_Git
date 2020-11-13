@@ -1,0 +1,1 @@
+# this file simulates a stabilized maneuver of the spacecraft
