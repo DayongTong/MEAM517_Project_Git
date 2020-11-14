@@ -8,7 +8,7 @@ import urllib.request
 from pathlib import Path
 import re
 
-def sync_hw(hw_id, files, from_master_branch=True):
+def sync_project(files, from_master_branch=True):
   if 'google.colab' in str(get_ipython()):
     # mount google drive to Colab
     from google.colab import drive
