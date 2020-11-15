@@ -18,11 +18,13 @@ class Spacecraft(object):
   the compute_feedback() function
   '''
   def __init__(self, Q, R, Qf, tf,x_d,u_d):
-    self.m = 1
-    self.a = 0.25
-    self.I = 0.0625
+
+  	self.x_d = x_d
+  	self.u_d = u_d
     self.Q = Q
     self.R = R
+    self.g = 9.81          
+	self.Isp = 302.39
 
     ''' 
     We are integrating backwards from Qf
@@ -32,7 +34,7 @@ class Spacecraft(object):
     L0 = cholesky(Qf).transpose()
 
     # We need to reshape L0 from a square matrix into a row vector to pass into ode45()
-    l0 = np.reshape(L0, (36))
+    l0 = np.reshape(L0, (81))
     # L must be integrated backwards, so we integrate L(tf - t) from 0 to tf
     initial_condition = [0, tf]
     sol = solve_ivp(self.dldt_minus, [0, tf], l0, dense_output=True)
@@ -47,26 +49,46 @@ class Spacecraft(object):
 
   def Ldot(self, t, L):
 
-    x = x_d(t)
-    u = u_d(t)
+    x = self.x_d(t)
+    u = self.u_d(t)
     Q = self.Q
     R = self.R
     
+    r = x[0]
+    alpha = x[1]
+    beta = x[2]
+    Vx = x[3]
+    Vy = x[4]
+    Vz = x[5]
+    m = x[6]
+    phi = x[7]
+    psi = x[8]
 
-    A = np.array(([[0,0,0,1,0,0],
-                   [0,0,0,0,1,0],
-                   [0,0,0,0,0,1],
-                   [0,0,-np.cos(x[2])/self.m * (u[0]+u[1]),0,0,0],
-                   [0,0,-np.sin(x[2])/self.m * (u[0]+u[1]),0,0,0],
-                   [0,0,0,0,0,0]]))
-    B = np.array(([0,0],
-                  [0,0],
-                  [0,0],
-                  [-np.sin(x[2])/self.m, -np.sin(x[2])/self.m],
-                  [np.cos(x[2])/self.m, np.cos(x[2])/self.m],
-                  [self.a/self.I,-self.a/self.I]))
+    T = u[0]
+    omega_phi = u[1]
+    omega_psi = u[2]
 
-    dLdt = np.zeros((6,6))
+    A = np.array(([	[0,									0,	0,								1,		0,						0,				0,							0,						0],
+    				[-Vy/(r**2*cos(beta)), 				0,	Vy*sin(beta)/(r*cos(beta)**2), 	0, 		1/(r*cos(beta)), 		0, 				0, 							0, 						0],
+    				[-Vz/r**2, 							0, 	0, 								0, 		0, 						1/r, 			0, 							0, 						0],
+    				[-(Vy**2+Vz**2)/r**2, 				0, 	0, 								0, 		2*Vy/r, 				2*Vz/r, 		-T*sin(phi)/m**2, 			T*cos(phi)/m, 			0],
+    				[Vx*Vy/r**2-Vy*Vz*tan(beta)/r**2,	0,	Vy*Vz*(1+tan(beta)**2)/r, 		-Vy/r,	-Vx/r+Vz*tan(beta)/r,	Vy*tan(beta)/r,	-T*cos(phi)*cos(psi)/m**2,	-T*sin(phi)*cos(psi)/m,	-T*cos(phi)*sin(psi)/m],
+    				[Vx*Vz/r**2+Vy**2*tan(beta)/r**2, 	0, 	-Vy**2(1+tan(beta)**2)/r, 		-Vz/r, 	-2*Vy*tan(beta)/r, 		-Vx/r, 			-T*cos(phi)*sin(psi)/m**2,	-T*sin(phi)*sin(psi)/m,	T*cos(phi)*cos(psi)/m],
+    				[0, 0, 0, 0, 0, 0, 0, 0],
+    				[0, 0, 0, 0, 0, 0, 0, 0],
+    				[0, 0, 0, 0, 0, 0, 0, 0]]))
+
+    B = np.array(([	[0, 0, 0],
+    				[0, 0, 0],
+    				[0, 0, 0],
+    				[sin(phi)/m, 0, 0],
+    				[cos(phi)*cos(psi)/m, 0, 0],
+    				[cos(phi)*sin(psi)/m, 0, 0],
+    				[-1/(Isp*g), 0, 0],
+    				[0, 1, 0],
+    				[0, 0, 1]]))
+
+    dLdt = np.zeros((9,9))
     # TODO: compute d/dt L(t)
     dLdt = (-1/2) * Q.dot(np.transpose(np.linalg.inv(L))) \
            - np.transpose(A).dot(L) + 1/2 * L.dot(np.transpose(L))\
@@ -76,36 +98,42 @@ class Spacecraft(object):
 
   def dldt_minus(self, t, l):
     # reshape l to a square matrix
-    L = np.reshape(l, (6, 6))
+    L = np.reshape(l, (9, 9))
 
     # compute Ldot
     dLdt_minus = -self.Ldot(t, L)
 
     # reshape back into a vector
-    dldt_minus = np.reshape(dLdt_minus, (36))
+    dldt_minus = np.reshape(dLdt_minus, (81))
     return dldt_minus
 
 
   def compute_feedback(self, t, x):
-    xbar = x - x_d(t)
-    xd = x_d(t)
+    xbar = x - self.x_d(t)
+    xd = self.x_d(t)
+    m = x[6]
+    phi = x[7]
+    psi = x[8]
 
-    B = np.array(([0,0],
-                  [0,0],
-                  [0,0],
-                  [-np.sin(xd[2])/self.m, -np.sin(xd[2])/self.m],
-                  [np.cos(xd[2])/self.m, np.cos(xd[2])/self.m],
-                  [self.a/self.I,-self.a/self.I]))
+    B = np.array(([	[0, 0, 0],
+					[0, 0, 0],
+					[0, 0, 0],
+					[sin(phi)/m, 0, 0],
+					[cos(phi)*cos(psi)/m, 0, 0],
+					[cos(phi)*sin(psi)/m, 0, 0],
+					[-1/(Isp*g), 0, 0],
+					[0, 1, 0],
+					[0, 0, 1]]))
 
     # Retrieve L(t)
-    L = np.reshape(self.l_spline(t), (6, 6))
+    L = np.reshape(self.l_spline(t), (9, 9))
 
-    u_fb = np.zeros((2,))
+    u_fb = np.zeros((3,))
     # TODO: Compute optimal feedback inputs u_fb using LQR
     u_fb = -np.linalg.inv(self.R).dot(np.transpose(B)).dot(L)\
            .dot(np.transpose(L)).dot(xbar)
 
     # Add u_fb to u_d(t), the feedforward term. 
     # u = u_fb + u_d
-    u = u_d(t) + u_fb;
+    u = self.u_d(t) + u_fb;
     return u
