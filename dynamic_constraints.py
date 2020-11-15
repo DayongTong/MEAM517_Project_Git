@@ -1,13 +1,7 @@
 import numpy as np
 from pydrake.autodiffutils import AutoDiffXd
+import pydrake.math as drake_math
 from math import sin, cos, tan
-
-# def cos(theta):
-#   return AutoDiffXd.cos(theta)
-# def sin(theta):
-#   return AutoDiffXd.sin(theta)
-# def tan(theta):
-#   return AutoDiffXd.tan(theta)
 
 def EvaluateDynamics(x, u):
     # """
@@ -36,8 +30,7 @@ def EvaluateDynamics(x, u):
     psi = x[8]
 
     rdot = Vx
-    print(beta)
-    alphadot = Vy/(r*cos(beta))
+    alphadot = Vy/(r*drake_math.cos(beta))
     betadot = Vz/r
 
     T = u[0]
@@ -46,9 +39,9 @@ def EvaluateDynamics(x, u):
 
     mdot = -T/(I_sp*g_m)
 
-    Vxdot = T*sin(phi)/m - g_e + (Vy**2 + Vz**2)/r
-    Vydot = T*cos(phi)*cos(psi)/m - (Vx*Vy)/r + (Vy*Vz*tan(beta))/r
-    Vzdot = T*cos(phi)*sin(psi)/m - (Vx*Vz)/r - (Vy**2*tan(beta))/r
+    Vxdot = T*drake_math.sin(phi)/m - g_e + (Vy**2 + Vz**2)/r
+    Vydot = T*drake_math.cos(phi)*drake_math.cos(psi)/m - (Vx*Vy)/r + (Vy*Vz*drake_math.tan(beta))/r
+    Vzdot = T*drake_math.cos(phi)*drake_math.sin(psi)/m - (Vx*Vz)/r - (Vy**2*drake_math.tan(beta))/r
 
     xdot  = np.array([rdot, alphadot, betadot,
                         Vxdot, Vydot, Vzdot, 
@@ -68,13 +61,12 @@ def CollocationConstraintEvaluator(dt, x_i, u_i, x_ip1, u_ip1):
     # Returns:
     # h_i (Array[Continuous Variables]): The constraint xdot_c - f(x_c, u_c) at midpoint time (t_i+1 - t_i)/2.
     # """
-    h_i = np.zeros(10,)
     f_i = EvaluateDynamics(x_i, u_i)
     f_ip1 = EvaluateDynamics(x_ip1, u_ip1)
     x_c = 0.5*(x_i + x_ip1) - dt/8 * (f_ip1 - f_i)
     u_c = 0.5*(u_i + u_ip1)
     h_i = 3/(2*dt)*(x_ip1-x_i) - 0.25*(f_i + f_ip1) - EvaluateDynamics(x_c, u_c)
-    return h_i
+    return np.array(h_i)
 
 
 def AddCollocationConstraints(prog, N, x, u, t_land):
@@ -90,10 +82,19 @@ def AddCollocationConstraints(prog, N, x, u, t_land):
     # Return:
     # None
     # """
+    n_x = 9
+    n_u = 3
     dt = t_land/N
-    for i in range(N-1):
-        h_i = CollocationConstraintEvaluator(dt, x[i], u[i], x[i+1], u[i+1])
-        print(i)
-        prog.AddLinearEqualityConstraint(h_i, np.zeros(10))
+    for i in range(N - 1):
+      def CollocationConstraintHelper(vars):
+        x_i = vars[:n_x]
+        u_i = vars[n_x:n_x + n_u]
+        x_ip1 = vars[n_x + n_u: 2*n_x + n_u]
+        u_ip1 = vars[-n_u:]
+
+        return CollocationConstraintEvaluator(dt, x_i, u_i, x_ip1, u_ip1)
+
+      prog.AddConstraint(CollocationConstraintHelper, np.zeros_like(x[i,:]), np.zeros_like(x[i,:]), vars=np.hstack((x[i,:], u[i,:], x[i+1,:], u[i+1,:])))
+
 
 
