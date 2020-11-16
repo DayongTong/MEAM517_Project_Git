@@ -4,10 +4,9 @@ from math import sin, cos, pi
 from scipy.integrate import solve_ivp
 from spacecraft import Spacecraft
 from dynamic_constraints import EvaluateDynamics
-from trajectories import *
 import matplotlib.pyplot as plt
 
-def simulate_spacecraft(x_0, t_land, spacecraft):
+def simulate_spacecraft(x_0,u_0,t_land,spacecraft):
     #simulates stabilized maneuver of spacecraft with initial state x_0
     t_0 = 0.0
     n_points = 1000
@@ -15,7 +14,7 @@ def simulate_spacecraft(x_0, t_land, spacecraft):
     dt = 1e-3
 
     x = [x_0]
-    u = [np.zeros((2,))]
+    u = [u_0]
     t = [t_0]
 
     while t[-1] < t_land:
