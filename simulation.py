@@ -2,16 +2,26 @@
 import numpy as np
 from math import sin, cos, pi
 from scipy.integrate import solve_ivp
-from spacecraft import Spacecraft
-from dynamic_constraints import EvaluateDynamics
 import matplotlib.pyplot as plt
+import importlib
+
+import dynamic_constraints
+importlib.reload(dynamic_constraints)
+from dynamic_constraints import (
+    AddCollocationConstraints,
+    EvaluateDynamics
+)
+import spacecraft
+importlib.reload(spacecraft)
+from spacecraft import Spacecraft
+
 
 def simulate_spacecraft(x_0,u_0,t_land,spacecraft):
     #simulates stabilized maneuver of spacecraft with initial state x_0
     t_0 = 0.0
     n_points = 1000
 
-    dt = 1e-3
+    dt = 1e-1
 
     x = [x_0]
     u = [u_0]
