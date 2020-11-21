@@ -78,13 +78,6 @@ class Spacecraft(object):
                         [0, 0, 0, 0, 0, 0, 0, 0,0],
                         [0, 0, 0, 0, 0, 0, 0, 0,0],
                         [0, 0, 0, 0, 0, 0, 0, 0,0]])
-        
-        # A = np.array([[0,0,0,1,0,0,0,0,0],
-        #                 [-Vy/(r**2*cos(beta)), 				0,	Vy*sin(beta)/(r*cos(beta)**2), 	0, 		1/(r*cos(beta)), 		0, 				0, 							0, 						0],
-        # [-Vz/r**2, 							0, 	0, 								0, 		0, 						1/r, 			0, 							0, 						0],
-        # [-(Vy**2+Vz**2)/r**2, 				0, 	0, 								0, 		2*Vy/r, 				2*Vz/r, 		-T*sin(phi)/m**2, 			T*cos(phi)/m, 			0],
-        # [Vx*Vy/r**2-Vy*Vz*tan(beta)/r**2,	0,	Vy*Vz*(1+tan(beta)**2)/r, 		-Vy/r,	-Vx/r+Vz*tan(beta)/r,	Vy*tan(beta)/r,	-T*cos(phi)*cos(psi)/m**2,	-T*sin(phi)*cos(psi)/m,	-T*cos(phi)*sin(psi)/m],
-        # [Vx*Vz/r**2+Vy**2*tan(beta)/r**2, 	0, 	-Vy**2*(1+tan(beta)**2)/r, 		-Vz/r, 	-2*Vy*tan(beta)/r, 		-Vx/r, 			-T*cos(phi)*sin(psi)/m**2,	-T*sin(phi)*sin(psi)/m,	T*cos(phi)*cos(psi)/m],])
 
         B = np.array([	[0, 0, 0],
                         [0, 0, 0],

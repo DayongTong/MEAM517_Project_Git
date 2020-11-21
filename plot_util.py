@@ -1,4 +1,6 @@
-def plot_util(timesteps, x_sol, u_sol):
+import matplotlib.pyplot as plt
+
+def plot_util(timesteps, x_sol, u_sol,n_x):
   fig, axes = plt.subplots(nrows=4, ncols=3, figsize=(15,15))
   fig.subplots_adjust(hspace=10)
   fig.suptitle('Nominal State and Input Trajectories')

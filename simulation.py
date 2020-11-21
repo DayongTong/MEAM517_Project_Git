@@ -26,6 +26,7 @@ def simulate_spacecraft(x_0,u_0,t_land,spacecraft):
     x = [x_0]
     u = [u_0]
     t = [t_0]
+    # x = [x_0.item()]
 
     while t[-1] < t_land:
         current_time = t[-1]
@@ -71,14 +72,3 @@ if __name__ == '__main__':
     plt.plot(x[:, 0], x[:, 1], label='actual trajectory')
     plt.legend()
     plt.show()
-
-    #plot altitude
-    # plt.plot()
-    # plt.plot()
-    # plt.legend()
-    # plt.show()
-    #plot latitude
-    #plot longitude
-    #plot V_x
-    #plot V_y
-    #plot V_z
