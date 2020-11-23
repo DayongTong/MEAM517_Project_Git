@@ -38,7 +38,7 @@ class Spacecraft(object):
         l0 = np.reshape(L0, (81))
         # L must be integrated backwards, so we integrate L(tf - t) from 0 to tf
         initial_condition = [0, tf]
-        sol = solve_ivp(self.dldt_minus, [0, tf], l0, dense_output=True)
+        sol = solve_ivp(self.dldt_minus, [0, tf], l0, dense_output=False)
         t = sol.t
         l = sol.y
 
