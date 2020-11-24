@@ -97,4 +97,40 @@ def AddCollocationConstraints(prog, N, x, u, dt):
 
       prog.AddConstraint(CollocationConstraintHelper, np.zeros_like(x[i,:]), np.zeros_like(x[i,:]), vars=np.hstack((x[i,:], u[i,:], x[i+1,:], u[i+1,:], dt)))
 
+def numeric_eval_dynamics(x_in, u_in,time,N):
+    g_m = 3.71 # Mars
+    I_sp = 302.39
+    xdot = []
+    for i in range(1,int(N*time)):
+        x = x_in.value(i)
+        u = u_in.value(i)
 
+        r = x[0].item()
+        alpha = x[1].item()
+        beta = x[2].item()
+        Vx = x[3].item()
+        Vy = x[4].item()
+        Vz = x[5].item()
+        m = x[6].item()
+        phi = x[7].item()
+        psi = x[8].item()
+
+        rdot = Vx
+        alphadot = Vy/(r*np.cos(beta))
+        betadot = Vz/r
+
+        T = u[0].item()
+        omega_phi = u[1].item()
+        omega_psi = u[2].item()
+
+        mdot = -T/(I_sp*g_m)
+
+        Vxdot = T*np.sin(phi)/m - g_m + (Vy**2 + Vz**2)/r
+        Vydot = T*np.cos(phi)*np.cos(psi)/m - (Vx*Vy)/r + (Vy*Vz*np.tan(beta))/r
+        Vzdot = T*np.cos(phi)*np.sin(psi)/m - (Vx*Vz)/r - (Vy**2*np.tan(beta))/r
+
+        temp  = [rdot, alphadot, betadot,
+                            Vxdot, Vydot, Vzdot, 
+                            mdot, omega_phi, omega_psi]
+        xdot.append(temp)
+    return np.array(xdot)
