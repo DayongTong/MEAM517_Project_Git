@@ -97,6 +97,37 @@ def AddCollocationConstraints(prog, N, x, u, dt):
 
       prog.AddConstraint(CollocationConstraintHelper, np.zeros_like(x[i,:]), np.zeros_like(x[i,:]), vars=np.hstack((x[i,:], u[i,:], x[i+1,:], u[i+1,:], dt)))
 
+def AddCollocationBegin(prog, N, x, u, dt):
+    n_x = 9
+    n_u = 3
+    n_begin = N/5
+    for i in range(n_begin):
+        def CollocationConstraintHelper(vars)
+            dt = vars[-1]
+            timestep = dt/4
+            x_i = vars[:n_x]
+            u_i = vars[n_x:n_x + n_u]
+            x_ip1 = vars[n_x + n_u: 2 * n_x + n_u]
+            u_ip1 = vars[-n_u - 1:-1]
+            return CollocationConstraintEvaluator(timestep, x_i, u_i, x_ip1, u_ip1)
+        prog.AddConstraint(CollocationConstraintHelper, np.zeros_like(x[i,:]), np.zeros_like(x[i,:]), vars=np.hstack(x[i,:], u[i,:], x[i+1,:], u[i+1,:], dt))
+
+def AddCollocationEnd(prog, N, x, u, dt):
+    n_x = 9
+    n_u = 3
+    n_end = N - N/5
+    for i in range(n_end, N):
+        def CollocationConstraintHelper(vars)
+            dt = vars[-1]
+            timestep = dt/4
+            x_i = vars[:n_x]
+            u_i = vars[n_x:n_x + n_u]
+            x_ip1 = vars[n_x + n_u: 2 * n_x + n_u]
+            u_ip1 = vars[-n_u - 1:-1]
+            return CollocationConstraintEvaluator(timestep, x_i, u_i, x_ip1, u_ip1)
+        prog.AddConstraint(CollocationConstraintHelper, np.zeros_like(x[i,:]), np.zeros_like(x[i,:]), vars=np.hstack(x[i,:], u[i,:], x[i+1,:], u[i+1,:], dt))
+
+
 def numeric_eval_dynamics(x_in, u_in,time,N):
     g_m = 3.71 # Mars
     I_sp = 302.39
