@@ -102,7 +102,7 @@ def AddCollocationBegin(prog, N, x, u, dt):
     n_u = 3
     n_begin = N/5
     for i in range(n_begin):
-        def CollocationConstraintHelper(vars)
+        def CollocationConstraintHelper(vars):
             dt = vars[-1]
             timestep = dt/4
             x_i = vars[:n_x]
@@ -117,7 +117,7 @@ def AddCollocationEnd(prog, N, x, u, dt):
     n_u = 3
     n_end = N - N/5
     for i in range(n_end, N):
-        def CollocationConstraintHelper(vars)
+        def CollocationConstraintHelper(vars):
             dt = vars[-1]
             timestep = dt/4
             x_i = vars[:n_x]
