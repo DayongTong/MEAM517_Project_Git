@@ -21,7 +21,7 @@ def simulate_spacecraft(x_0,u_0,t_land,spacecraft):
     t_0 = 0.0
     n_points = 1000
 
-    dt = 1e-1
+    dt = 3e-4
 
     x = [x_0]
     u = [u_0]
