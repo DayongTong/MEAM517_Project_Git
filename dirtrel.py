@@ -105,12 +105,12 @@ def ell_w(x, u, D, E_1, Q_l, R_l, Ql_n, Q, R, N):
 
 def AddCost(x, u, use_dirtrel=False):
     TT = 0
-    D = 1
-    E_1 = 1
     for i in range(N-1):
         TT += (u[i,0]**2 + u[i+1,0]**2)
     if use_dirtrel == False:
         prog.AddQuadraticCost(TT)
     else:
-        TT += ell_w(x, u, 20, np.eye(9), Q, R,Q,Q,R,N)
+        D = 20
+        E_1 = np.eye(9)
+        TT += ell_w(x, u, D, E_1, Q, R,Q,Q,R,N)
         prog.AddCost(TT)
