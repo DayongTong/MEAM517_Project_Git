@@ -1,76 +1,116 @@
-def compute_A(x, u):
-    r = x[0].item()
-    alpha = x[1].item()
-    beta = x[2].item()
-    Vx = x[3].item()
-    Vy = x[4].item()
-    Vz = x[5].item()
-    m = x[6].item()
-    phi = x[7].item()
-    psi = x[8].item()
+def compute_A(x, u, w, i):
+    r = x[:,0]
+    alpha = x[:,1]
+    beta = x[:,2]
+    Vx = x[:,3]
+    Vy = x[:,4]
+    Vz = x[:,5]
+    m = x[:,6]
+    phi = x[:,7]
+    psi = x[:,8]
 
-    T = u[0].item()
-    omega_phi = u[1].item()
-    omega_psi = u[2].item()
-
+    T = u[:,0]
+    omega_phi = u[:,1]
+    omega_psi = u[:,2]
     A = np.array([  [0,0,0,1,0,0,0,0,0],
-                    [-Vy/(r**2*cos(beta)), 				0,	Vy*sin(beta)/(r*cos(beta)**2), 	0, 		1/(r*cos(beta)), 		0, 				0, 							0, 						0],
-                    [-Vz/r**2, 							0, 	0, 								0, 		0, 						1/r, 			0, 							0, 						0],
-                    [-(Vy**2+Vz**2)/r**2, 				0, 	0, 								0, 		2*Vy/r, 				2*Vz/r, 		-T*sin(phi)/m**2, 			T*cos(phi)/m, 			0],
-                    [Vx*Vy/r**2-Vy*Vz*tan(beta)/r**2,	0,	Vy*Vz*(1+tan(beta)**2)/r, 		-Vy/r,	-Vx/r+Vz*tan(beta)/r,	Vy*tan(beta)/r,	-T*cos(phi)*cos(psi)/m**2,	-T*sin(phi)*cos(psi)/m,	-T*cos(phi)*sin(psi)/m],
-                    [Vx*Vz/r**2+Vy**2*tan(beta)/r**2, 	0, 	-Vy**2*(1+tan(beta)**2)/r, 		-Vz/r, 	-2*Vy*tan(beta)/r, 		-Vx/r, 			-T*cos(phi)*sin(psi)/m**2,	-T*sin(phi)*sin(psi)/m,	T*cos(phi)*cos(psi)/m],
+                    [-Vy[i]/(r[i]**2*drake_math.cos(beta[i])), 				0,	Vy[i]*drake_math.sin(beta[i])/(r[i]*drake_math.cos(beta[i])**2), 	0, 		1/(r[i]*drake_math.cos(beta[i])), 		0, 				0, 							0, 						0],
+                    [-Vz[i]/r[i]**2, 							0, 	0, 								0, 		0, 						1/r[i], 			0, 							0, 						0],
+                    [-(Vy[i]**2+Vz[i]**2)/r[i]**2, 				0, 	0, 								0, 		2*Vy[i]/r[i], 				2*Vz[i]/r[i], 		-T[i]*drake_math.sin(phi[i])/(m[i]+w)**2, 			T[i]*drake_math.cos(phi[i])/(m[i]+w), 			0],
+                    [Vx[i]*Vy[i]/r[i]**2-Vy[i]*Vz[i]*drake_math.tan(beta[i])/r[i]**2,	0,	Vy[i]*Vz[i]*(1+drake_math.tan(beta[i])**2)/r[i], 		-Vy[i]/r[i],	-Vx[i]/r[i]+Vz[i]*drake_math.tan(beta[i])/r[i],	Vy[i]*drake_math.tan(beta[i])/r[i],	-T[i]*drake_math.cos(phi[i])*drake_math.cos(psi[i])/(m[i]+w)**2,	-T[i]*drake_math.sin(phi[i])*drake_math.cos(psi[i])/(m[i]+w),	-T[i]*drake_math.cos(phi[i])*drake_math.sin(psi[i])/(m[i]+w)],
+                    [Vx[i]*Vz[i]/r[i]**2+Vy[i]**2*drake_math.tan(beta[i])/r[i]**2, 	0, 	-Vy[i]**2*(1+drake_math.tan(beta[i])**2)/r[i], 		-Vz[i]/r[i], 	-2*Vy[i]*drake_math.tan(beta[i])/r[i], 		-Vx[i]/r[i], 			-T[i]*drake_math.cos(phi[i])*drake_math.sin(psi[i])/(m[i]+w)**2,	-T[i]*drake_math.sin(phi[i])*drake_math.sin(psi[i])/(m[i]+w),	T[i]*drake_math.cos(phi[i])*drake_math.cos(psi[i])/(m[i]+w)],
                     [0, 0, 0, 0, 0, 0, 0, 0,0],
                     [0, 0, 0, 0, 0, 0, 0, 0,0],
                     [0, 0, 0, 0, 0, 0, 0, 0,0]])
+
     return A
 
-def compute_B(x, u):
-    r = x[0].item()
-    alpha = x[1].item()
-    beta = x[2].item()
-    Vx = x[3].item()
-    Vy = x[4].item()
-    Vz = x[5].item()
-    m = x[6].item()
-    phi = x[7].item()
-    psi = x[8].item()
+def compute_B(x, u, w, i):
 
-    T = u[0].item()
-    omega_phi = u[1].item()
-    omega_psi = u[2].item()
+    m = x[:,6]
+    phi = x[:,7]
+    psi = x[:,8]
 
     B = np.array([  [0, 0, 0],
                     [0, 0, 0],
                     [0, 0, 0],
-                    [sin(phi)/m, 0, 0],
-                    [cos(phi)*cos(psi)/m, 0, 0],
-                    [cos(phi)*sin(psi)/m, 0, 0],
-                    [-1/(self.Isp*self.g), 0, 0],
+                    [drake_math.sin(phi[i])/(m[i]+w), 0, 0],
+                    [drake_math.cos(phi[i])*drake_math.cos(psi[i])/(m[i]+w), 0, 0],
+                    [drake_math.cos(phi[i])*drake_math.sin(psi[i])/(m[i]+w), 0, 0],
+                    [-1/(Isp*g), 0, 0],
                     [0, 1, 0],
                     [0, 0, 1]])
     return B
 
-def compute_G(x, u):
-    #TODO: compute G
+def compute_G(x, u, w, i):
+    r = x[:,0]
+    alpha = x[:,1]
+    beta = x[:,2]
+    Vx = x[:,3]
+    Vy = x[:,4]
+    Vz = x[:,5]
+    m = x[:,6]
+    phi = x[:,7]
+    psi = x[:,8]
+
+    T = u[:,0]
+    omega_phi = u[:,1]
+    omega_psi = u[:,2]
+    
+    G = np.array([ [0],
+                   [0],
+                   [0],
+                   [-T*drake_math.sin(phi[i])/(m[i]+w)**2],
+                   [-T*drake_math.cos(phi[i])*drake_math.cos(psi[i])/(m[i]+w)**2],
+                   [-T*drake_math.cos(phi[i])*drake_math.sin(psi[i])/(m[i]+w)**2],
+                   [0],
+                   [0],
+                   [0]])
+    return G
+
 
 def ell_w(x, u, D, E_1, Q_l, R_l, Ql_n, Q, R, N):
+    
     ell = 0
-    for i in range(N-1):
-        A[i] = compute_A(x, u)
-        B[i] = compute_B(x, u)
-        G[i] = compute_G(x, u)
+    w = np.random.rand() # [0, 1)
+    A, B, G, K = [0]*N, [0]*N, [0]*N, [0]*(N-1)
+    H = [0]*N
+    E = [0]*N
+    for i in range(N):
+        A[i] = compute_A(x, u, w, i)
+        B[i] = compute_B(x, u, w, i)
+        G[i] = compute_G(x, u, w, i)
 
-    K = #LQR(A, B, Q, R)
-    H[0] = np.zeros()
+    P = [0]*N
+    P[-1] = Ql_n
+    
+    # compute Riccati difference equation for i:N
+    for i in reversed(range(1,N)):
+        P[i-1] = Q + A[i].T@P[i]@A[i]-A[i].T@P[i]@B[i]@inv(R + B[i].T@P[i]@B[i])@(B[i].T@P[i]@A[i])
+    for i in range(N-1):
+        K[i] = inv(R + B[i].T@P[i+1]@B[i])@(B[i].T@P[i+1]@A[i])
+    
+    H[0] = np.zeros_like(Q)
     E[0] = E_1
     
     for i in range(N-1):
-        mat = (Q_l + K[i].T @ R_l @ K[i]) @ E[i]
-        ell += mat.trace()
-        E[i+1] = (A[i] - B[i] @ K[i]) @ E[i] @ (A[i] - B[i] @ K[i]).T +  (A[i] - B[i] @ K[i]) @ H[i] @ G[i].T + \
-                G[i] @ H[i] @  (A[i] - B[i] @ K[i]).T + G[i] @ D @ G[i].T
+        ell += np.trace(Q_l + K[i].T @ R_l @ K[i]) @ E[i]
+
+        E[i+1] = (A[i] - B[i] @ K[i]) @ E[i] @ (A[i] - B[i] @ K[i]).T + \
+                 (A[i] - B[i] @ K[i]) @ H[i] @ G[i].T + \
+                  G[i] @ H[i] @  (A[i] - B[i] @ K[i]).T + G[i] @ D @ G[i].T
         H[i+1] =  (A[i] - B[i] @ K[i]) @ H[i] + G[i] @ D
 
-    mat2 = Ql_n @ E[N]
-    ell += mat2.trace()
+    ell += np.trace(Ql_n @ E[N])
     return ell
+
+def AddCost(x, u, use_dirtrel=False):
+    TT = 0
+    D = 1
+    E_1 = 1
+    for i in range(N-1):
+        TT += (u[i,0]**2 + u[i+1,0]**2)
+    if use_dirtrel == False:
+        prog.AddQuadraticCost(TT)
+    else:
+        TT += ell_w(x, u, 20, np.eye(9), Q, R,Q,Q,R,N)
+        prog.AddCost(TT)
