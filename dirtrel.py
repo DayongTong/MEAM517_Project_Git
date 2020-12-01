@@ -57,7 +57,7 @@ def compute_G(x, u, w, i):
                    [0,0,0,0,0,0,0,0,0]])
     return G
 
-def ell_w(x, u, D, E_1, Q_l, R_l, Ql_n, Q, R, N, start=0, stop=6):
+def ell_w(x, u, D, E_1, Q_l, R_l, Ql_n, Q, R, N):
     
     ell = 0
     w = 20*np.random.rand() # [0, 1)
@@ -85,7 +85,7 @@ def ell_w(x, u, D, E_1, Q_l, R_l, Ql_n, Q, R, N, start=0, stop=6):
     
     H[0] = np.zeros_like(Q)
     E[0] = E_1
-    for i in range(start, stop):
+    for i in range(N-1):
         ell += np.trace(Q_l + K[i].T @ R_l @ K[i] @ E[i])
         E[i+1] = (A[i] - B[i] @ K[i]) @ E[i] @ (A[i] - B[i] @ K[i]).T + \
                  (A[i] - B[i] @ K[i]) @ H[i] @ G[i].T + \
