@@ -42,65 +42,56 @@ def compute_B(x, u, w, i):
     return B
 
 def compute_G(x, u, w, i):
-    r = x[:,0]
-    alpha = x[:,1]
-    beta = x[:,2]
-    Vx = x[:,3]
-    Vy = x[:,4]
-    Vz = x[:,5]
     m = x[:,6]
     phi = x[:,7]
     psi = x[:,8]
-
     T = u[:,0]
-    omega_phi = u[:,1]
-    omega_psi = u[:,2]
-    
-    G = np.array([ [0],
-                   [0],
-                   [0],
-                   [-T*drake_math.sin(phi[i])/(m[i]+w)**2],
-                   [-T*drake_math.cos(phi[i])*drake_math.cos(psi[i])/(m[i]+w)**2],
-                   [-T*drake_math.cos(phi[i])*drake_math.sin(psi[i])/(m[i]+w)**2],
-                   [0],
-                   [0],
-                   [0]])
+    G = np.array([ [0,0,0,0,0,0,0,0,0],
+                   [0,0,0,0,0,0,0,0,0],
+                   [0,0,0,0,0,0,0,0,0],
+                   [0,0,0,0,0,0,-T[i]*drake_math.sin(phi[i])/(m[i]+w)**2,0,0],
+                   [0,0,0,0,0,0,-T[i]*drake_math.cos(phi[i])*drake_math.cos(psi[i])/(m[i]+w)**2,0,0],
+                   [0,0,0,0,0,0,-T[i]*drake_math.cos(phi[i])*drake_math.sin(psi[i])/(m[i]+w)**2,0,0],
+                   [0,0,0,0,0,0,0,0,0],
+                   [0,0,0,0,0,0,0,0,0],
+                   [0,0,0,0,0,0,0,0,0]])
     return G
-
 
 def ell_w(x, u, D, E_1, Q_l, R_l, Ql_n, Q, R, N):
     
     ell = 0
-    w = np.random.rand() # [0, 1)
-    A, B, G, K = [0]*N, [0]*N, [0]*N, [0]*(N-1)
-    H = [0]*N
-    E = [0]*N
+    w = 20*np.random.rand() # [0, 1)
+    A = np.zeros((N,n_x,n_x), dtype=AutoDiffXd)
+    B = np.zeros((N,n_x,n_u), dtype=AutoDiffXd)
+    G = np.zeros((N,n_x,n_x), dtype=AutoDiffXd)
+
+    K = [0]*(N-1)
+
+    K = np.zeros((N-1,n_u,n_x), dtype=AutoDiffXd)    
+    E = np.zeros((N,n_x,n_x), dtype=AutoDiffXd)    
+    H = np.zeros((N,n_x,n_x), dtype=AutoDiffXd)    
     for i in range(N):
         A[i] = compute_A(x, u, w, i)
         B[i] = compute_B(x, u, w, i)
-        G[i] = compute_G(x, u, w, i)
-
+        G[i] = compute_G(x, u, 0, i)
     P = [0]*N
     P[-1] = Ql_n
     
-    # compute Riccati difference equation for i:N
+    # compute Riccati difference equation for i in 1:N
     for i in reversed(range(1,N)):
-        P[i-1] = Q + A[i].T@P[i]@A[i]-A[i].T@P[i]@B[i]@inv(R + B[i].T@P[i]@B[i])@(B[i].T@P[i]@A[i])
+        P[i-1] = Q + A[i].T@P[i]@A[i]-A[i].T@P[i]@B[i]@(R + B[i].T@P[i]@B[i]).T@(B[i].T@P[i]@A[i])
     for i in range(N-1):
-        K[i] = inv(R + B[i].T@P[i+1]@B[i])@(B[i].T@P[i+1]@A[i])
+        K[i] = (R + B[i].T@P[i+1]@B[i]).T@(B[i].T@P[i+1]@A[i])
     
     H[0] = np.zeros_like(Q)
     E[0] = E_1
-    
     for i in range(N-1):
-        ell += np.trace(Q_l + K[i].T @ R_l @ K[i]) @ E[i]
-
+        ell += np.trace(Q_l + K[i].T @ R_l @ K[i] @ E[i])
         E[i+1] = (A[i] - B[i] @ K[i]) @ E[i] @ (A[i] - B[i] @ K[i]).T + \
                  (A[i] - B[i] @ K[i]) @ H[i] @ G[i].T + \
-                  G[i] @ H[i] @  (A[i] - B[i] @ K[i]).T + G[i] @ D @ G[i].T
+                  G[i] @ H[i].T @  (A[i] - B[i] @ K[i]).T + G[i] @ D @ G[i].T
         H[i+1] =  (A[i] - B[i] @ K[i]) @ H[i] + G[i] @ D
-
-    ell += np.trace(Ql_n @ E[N])
+    ell += np.trace(Ql_n @ E[-1])
     return ell
 
 def AddCost(x, u, use_dirtrel=False):
@@ -110,7 +101,8 @@ def AddCost(x, u, use_dirtrel=False):
     if use_dirtrel == False:
         prog.AddQuadraticCost(TT)
     else:
-        D = 20
+        D = 20*np.eye(9)
         E_1 = np.eye(9)
-        TT += ell_w(x, u, D, E_1, Q, R,Q,Q,R,N)
+        TT += ell_w(x, u, D, E_1, Q, R,Q,Q,R,N,0,6)
+        TT += ell_w(x, u, D, E_1, Q, R,Q,Q,R,N,6,N-1)
         prog.AddCost(TT)
