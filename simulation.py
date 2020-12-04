@@ -4,6 +4,7 @@ from math import sin, cos, pi
 from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 import importlib
+import random
 
 import dynamic_constraints
 importlib.reload(dynamic_constraints)
@@ -15,8 +16,10 @@ import spacecraft
 importlib.reload(spacecraft)
 from spacecraft import Spacecraft
 
-
-def simulate_spacecraft(x_0,u_0,t_land,spacecraft):
+# w is a list of funnel boundary on disturbances
+# idxs is a list of state variable indexs corresponds to the disturbances
+# for example idx=6 corresponds to mass
+def simulate_spacecraft(x_0,u_0,t_land,spacecraft,w,idxs):
     #simulates stabilized maneuver of spacecraft with initial state x_0
     t_0 = 0.0
     n_points = 1000
@@ -31,6 +34,8 @@ def simulate_spacecraft(x_0,u_0,t_land,spacecraft):
     while t[-1] < t_land:
         current_time = t[-1]
         current_x = x[-1]
+        for i,idx in enumerate(idxs):
+          current_x[idx] += random.uniform(-w[i],w[i])
         current_u = spacecraft.compute_feedback(current_time, current_x)
 
         # Autonomous ODE for constant inputs to work with solve_ivp

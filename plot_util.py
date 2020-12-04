@@ -22,7 +22,7 @@ def plot_util(timesteps, x_sol, u_sol,n_x):
 
 def plot_util_overlay(timesteps1,x_reg,u_reg,timesteps2,x_dirtrel,u_dirtrel,n_x):
   fig,axes = plt.subplots(nrows=4,ncols=3,figsize=(15,15))
-  fig.subplots_adjust(hspace=10)
+  # fig.subplots_adjust(hspace=10)
   fig.suptitle('Trajectories of simulation')
   labels = ['Altitude $r$ (m)', r'Latitude $\alpha$ (deg)', r'Longitude $\beta$ (deg)',
             '$V_x$ (m/s)', '$V_y$ (m/s)', '$V_z$ (m/s)',
@@ -31,11 +31,11 @@ def plot_util_overlay(timesteps1,x_reg,u_reg,timesteps2,x_dirtrel,u_dirtrel,n_x)
     
   for idx,ax in enumerate(axes.flatten()):
     if idx < n_x:
-      ax.plot(timesteps,x_sol[:,idx],label="DIRCON")
+      ax.plot(timesteps1,x_reg[:,idx],label="DIRCON")
       ax.plot(timesteps2,x_dirtrel[:,idx],label="DIRTREL")
     else:
-      ax.plot(timesteps, u_sol[:,idx % n_x],label="DIRCON")
-      ax.plot(timesteps2,u_dirtrel[:,idx],label="DIRTREL")
+      ax.plot(timesteps1, u_reg[:,idx % n_x],label="DIRCON")
+      ax.plot(timesteps2,u_dirtrel[:,idx % n_x],label="DIRTREL")
     ax.set(ylabel = labels[idx])
     ax.set(xlabel = "Time (s)")
     ax.legend(loc="lower right")
