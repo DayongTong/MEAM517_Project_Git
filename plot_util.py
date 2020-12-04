@@ -40,6 +40,29 @@ def plot_util_overlay(timesteps1,x_reg,u_reg,timesteps2,x_dirtrel,u_dirtrel,n_x)
     ax.set(xlabel = "Time (s)")
     ax.legend(loc="lower right")
 
+def plot_util_overlay_all(timesteps1, x_dircon1, u_dircon1, timesteps2, x_dircon2, u_dircon2, timesteps3, x_dirtrel1, u_dirtrel1, timesteps4, x_dirtrel2, u_dirtrel2, n_x):
+    fig, axes = plt.subplots(nrows=4, ncols=3, figsize=(15,15))
+    fig.subplots_adjust(hspace=15)
+    fig.suptitle('Comparison of DIRCON and DIRTREL')
+    labels = ['Altitude $r$ (m)', r'Latitude $\alpha$ (deg)', r'Longitude $\beta$ (deg)',
+            'X-Velocity $V_x$ (m/s)', 'Y-velocity $V_y$ (m/s)', 'Z-velocity $V_z$ (m/s)',
+            'Mass (kg)', r'Pitch $\phi$ (deg)', r'Yaw $\psi$ (deg)',
+            'Thrust (N)', r'Pitch Rate $\omega_{\phi}$ (deg/s)', r'Yaw Rate $\omega_{\psi}$ (deg/s)']
+    for idx,ax in enumerate(axes.flatten()):
+    if idx < n_x:
+      ax.plot(timesteps1, x_dircon1[:,idx], label="optimal DIRCON")
+      ax.plot(timesteps2, x_dircon2[:,idx], label="simulated DIRCON")
+      ax.plot(timesteps3, x_dirtrel1[:,idx], label="DIRTREL output")
+      ax.plot(timesteps4, x_dirtrel2[:,idx], label="simulated DIRTREL")
+    else:
+      ax.plot(timesteps1, u_dircon1[:,idx % n_x], label="optimal DIRCON")
+      ax.plot(timesteps2, u_dircon2[:,idx % n_x], label="simulated DIRCON")
+      ax.plot(timesteps3, u_dirtrel1[:,idx % n_x], label="DIRTREL output")
+      ax.plot(timesteps4, u_dirtrel2[:,idx % n_x], label="simulated DIRTREL")
+    ax.set(ylabel = labels[idx])
+    ax.set(xlabel = "Time (s)")
+    ax.legend(loc="lower right")
+
 
 def plot_util_spline(N, t_sol, x_s, u_s, n_x, r_min):
   fig, axes = plt.subplots(nrows=4, ncols=3, figsize=(15,15))
