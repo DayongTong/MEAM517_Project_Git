@@ -3,9 +3,11 @@ import numpy as np
 
 color1 = "dodgerblue"
 color2 = "orange"
+lw = 2.5 #linewidth
+ftsz = 16 #label fontsize
 
 def plot_util(timesteps, x_sol, u_sol,n_x):
-  fig, axes = plt.subplots(nrows=4, ncols=3, figsize=(15,15))
+  fig, axes = plt.subplots(nrows=3, ncols=4, figsize=(15,15))
   fig.subplots_adjust(hspace=10)
   fig.suptitle('Nominal State and Input Trajectories')
   labels = ['Altitude $r$ (m)', r'Latitude $\alpha$ (deg)', r'Longitude $\beta$ (deg)',
@@ -37,7 +39,7 @@ def plot_util_overlay(timesteps1,x_reg,u_reg,timesteps2,x_dirtrel,u_dirtrel,n_x)
         if idx == 2:
             ax.plot(timesteps1,x_reg[:,idx],color1,label="DIRCON")
             ax.plot(timesteps2,x_dirtrel[:,idx],color2,label="DIRTREL")
-            ax.legend(loc="center left")
+            ax.legend(loc="lower left")
         else:
             ax.plot(timesteps1,x_reg[:,idx],color1,label="DIRCON")
             ax.plot(timesteps2,x_dirtrel[:,idx],color2,label="DIRTREL")
@@ -51,7 +53,7 @@ def plot_util_overlay(timesteps1,x_reg,u_reg,timesteps2,x_dirtrel,u_dirtrel,n_x)
     
 
 def plot_util_overlay_all(timesteps1, x_dircon1, u_dircon1, timesteps2, x_dircon2, u_dircon2, timesteps3, x_dirtrel1, u_dirtrel1, timesteps4, x_dirtrel2, u_dirtrel2, n_x):
-    fig, axes = plt.subplots(nrows=4, ncols=3, figsize=(15,15))
+    fig, axes = plt.subplots(nrows=3, ncols=4, figsize=(20,12))
     # fig.subplots_adjust(hspace=15)
     # fig.suptitle('Comparison of DIRCON and DIRTREL')
     labels = ['Altitude $r$ (m)', r'Latitude $\alpha$ (deg)', r'Longitude $\beta$ (deg)',
@@ -61,27 +63,28 @@ def plot_util_overlay_all(timesteps1, x_dircon1, u_dircon1, timesteps2, x_dircon
     for idx,ax in enumerate(axes.flatten()):
         if idx < n_x:
             if idx == 0:
-                l1 = ax.plot(timesteps1, x_dircon1[:,idx],"dodgerblue",linestyle='--', label="optimal DIRCON")
-                l2 = ax.plot(timesteps2, x_dircon2[:,idx],"dodgerblue", label="simulated DIRCON")
-                l3 = ax.plot(timesteps3, x_dirtrel1[:,idx],"orange",linestyle='--', label="DIRTREL output")
-                l4 = ax.plot(timesteps4, x_dirtrel2[:,idx],"orange", label="simulated DIRTREL")
-                ax.legend(loc="lower left")
-                # ax.legend(handles = [l1,l2,l3,l4] , labels=["optimal DIRCON", "simulated DIRCON", "DIRTREL output","simulated DIRTREL" ],loc='lower center', 
-                #     bbox_to_anchor=(0.5, -0.2),fancybox=False, shadow=False, ncol=3)
+                l1 = ax.plot(timesteps1, x_dircon1[:,idx],"dodgerblue",linestyle='--', label="optimal DIRCON",linewidth=lw)
+                l2 = ax.plot(timesteps2, x_dircon2[:,idx],"dodgerblue", label="simulated DIRCON",linewidth=lw)
+                l3 = ax.plot(timesteps3, x_dirtrel1[:,idx],"orange",linestyle='--', label="optimal DIRTREL",linewidth=lw)
+                l4 = ax.plot(timesteps4, x_dirtrel2[:,idx],"orange", label="simulated DIRTREL",linewidth=lw)
+                ax.legend(loc="lower left",bbox_to_anchor=(0.05,1.02),prop={'size':18},ncol=4)
+
             else:
-                ax.plot(timesteps1, x_dircon1[:,idx],"dodgerblue",linestyle='--', label="optimal DIRCON")
-                ax.plot(timesteps2, x_dircon2[:,idx],"dodgerblue", label="simulated DIRCON")
-                ax.plot(timesteps3, x_dirtrel1[:,idx],"orange",linestyle='--', label="DIRTREL output")
-                ax.plot(timesteps4, x_dirtrel2[:,idx],"orange", label="simulated DIRTREL")
+                ax.plot(timesteps1, x_dircon1[:,idx],"dodgerblue",linestyle='--', label="optimal DIRCON",linewidth=lw)
+                ax.plot(timesteps2, x_dircon2[:,idx],"dodgerblue", label="simulated DIRCON",linewidth=lw)
+                ax.plot(timesteps3, x_dirtrel1[:,idx],"orange",linestyle='--', label="optimal DIRTREL",linewidth=lw)
+                ax.plot(timesteps4, x_dirtrel2[:,idx],"orange", label="simulated DIRTREL",linewidth=lw)
         else:
-            ax.plot(timesteps1, u_dircon1[:,idx % n_x],"dodgerblue",linestyle='--', label="optimal DIRCON")   
-            ax.plot(timesteps2, u_dircon2[:,idx % n_x],"dodgerblue", label="simulated DIRCON")
-            ax.plot(timesteps3, u_dirtrel1[:,idx % n_x],"orange",linestyle='--', label="DIRTREL output")
-            ax.plot(timesteps4, u_dirtrel2[:,idx % n_x],"orange", label="simulated DIRTREL")
+            ax.plot(timesteps1, u_dircon1[:,idx % n_x],"dodgerblue",linestyle='--', label="optimal DIRCON",linewidth=lw)   
+            ax.plot(timesteps2, u_dircon2[:,idx % n_x],"dodgerblue", label="simulated DIRCON",linewidth=lw)
+            ax.plot(timesteps3, u_dirtrel1[:,idx % n_x],"orange",linestyle='--', label="optimal DIRTREL",linewidth=lw)
+            ax.plot(timesteps4, u_dirtrel2[:,idx % n_x],"orange", label="simulated DIRTREL",linewidth=lw)
         ax.set(ylabel = labels[idx])
         ax.set(xlabel = "Time (s)")
-        # ax.legend(loc="lower right")
-    plt.tight_layout()
+        ax.xaxis.label.set_fontsize(ftsz)
+        ax.yaxis.label.set_fontsize(ftsz)
+    plt.subplots_adjust(wspace=0.4,hspace=0.3)
+    # plt.tight_layout()
     plt.savefig(fname='trajectory_plot',dpi=300)
     
 
